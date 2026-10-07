@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Camera - Camera Bypass</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+          </svg>
+        </div>
+        <div>
+          <h1 class="title">QR Camera</h1>
+          <p class="subtitle">Virtual Webcam Bypass</p>
+        </div>
+      </div>
+      <div class="toggle-wrapper">
+        <label class="switch" title="Aktifkan / Nonaktifkan Bypass Kamera">
+          <input type="checkbox" id="toggleBypass">
+          <span class="slider round"></span>
+        </label>
+        <span id="statusLabel" class="status-badge status-off">OFF</span>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="content">
+      <!-- Input Area -->
+      <section class="section input-section">
+        <div class="section-header">
+          <label for="qrTextInput" class="section-title">Teks / Data Barcode</label>
+          <button id="btnClear" class="btn-text" type="button" title="Bersihkan input">Hapus</button>
+        </div>
+        <div class="textarea-wrapper">
+          <textarea
+            id="qrTextInput"
+            rows="3"
+            placeholder="Ketik teks, URL, kode barcode, atau data yang ingin di-scan..."
+            spellcheck="false"
+          ></textarea>
+        </div>
+
+        <!-- Quick Presets -->
+        <div class="preset-chips">
+          <span class="preset-label">Preset:</span>
+          <button type="button" class="chip" data-preset="ITEM-CODE-884920">Item Code</button>
+          <button type="button" class="chip" data-preset="https://example.com">URL</button>
+          <button type="button" class="chip" data-preset="TICKET-2026-099">Ticket</button>
+          <button type="button" class="chip" data-preset="random-uuid">Random</button>
+        </div>
+
+        <!-- Main Action Buttons -->
+        <div class="action-buttons">
+          <button id="btnGenerate" class="btn btn-primary" type="button">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            Generate & Aktifkan
+          </button>
+        </div>
+      </section>
+
+      <!-- Live Preview -->
+      <section class="section preview-section">
+        <div class="preview-card">
+          <div class="preview-header">
+            <span class="preview-title">Live Preview Stream</span>
+            <span id="streamIndicator" class="stream-badge hidden">
+              <span class="pulse-dot"></span> LIVE
+            </span>
+          </div>
+          <div class="qr-canvas-wrapper" id="qrContainer">
+            <!-- Rendered QR Code canvas/img placed here -->
+            <div id="qrPlaceholder" class="qr-placeholder">
+              <p>Belum ada QR Code</p>
+              <small>Klik "Generate & Aktifkan" di atas</small>
+            </div>
+          </div>
+          <div class="preview-meta">
+            <span id="charCount">0 karakter</span>
+            <div class="mini-actions">
+              <button id="btnCopy" class="btn-icon" type="button" title="Salin Gambar QR">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+              <button id="btnDownload" class="btn-icon" type="button" title="Unduh Gambar QR">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- History Section -->
+      <section class="section history-section">
+        <div class="section-header">
+          <span class="section-title">Riwayat QR (Klik untuk Ganti Cepat)</span>
+          <button id="btnClearHistory" class="btn-text" type="button">Hapus</button>
+        </div>
+        <div id="historyList" class="history-list">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- Options & Test -->
+      <section class="section options-section">
+        <details class="options-details">
+          <summary class="options-summary">Pengaturan & Bantuan</summary>
+          <div class="options-body">
+            <label class="checkbox-label">
+              <input type="checkbox" id="chkWatermark" checked>
+              <span>Tampilkan Info Text di Video Stream</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="chkAutoReload" checked>
+              <span>Otomatis Refresh Tab saat Diaktifkan</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="chkLaser">
+              <span>Efek Laser Animasi</span>
+            </label>
+            <div class="test-runner-wrapper">
+              <button id="btnOpenTest" class="btn btn-secondary" type="button">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                  <circle cx="12" cy="13" r="4"></circle>
+                </svg>
+                Buka Halaman Test Scanner
+              </button>
+            </div>
+          </div>
+        </details>
+      </section>
+    </main>
+
+    <!-- Footer Toast -->
+    <div id="toast" class="toast"></div>
+  </div>
+
+  <script src="qrcode.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
