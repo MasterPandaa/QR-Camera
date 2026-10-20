@@ -1,73 +1,84 @@
-# QR-Camera — Virtual Webcam Stream Bypass for QA Testing
+<p align="center">
+  <img src="https://raw.githubusercontent.com/MasterPandaa/MasterPandaa/main/assets/banners/QR-Camera.svg" alt="QR-Camera Injector Banner" width="100%">
+</p>
 
-[![Manifest V3](https://img.shields.io/badge/Manifest-V3-success.svg)](#)
-[![Browser Support](https://img.shields.io/badge/Browsers-Chrome%20%7C%20Edge%20%7C%20Brave%20%7C%20Opera%20%7C%20Firefox-blue.svg)](#)
-[![Zero Dependencies](https://img.shields.io/badge/Dependencies-Zero%20External%20APIs-orange.svg)](#)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](#)
-
-A browser extension built with **Manifest V3** that overrides browser webcam feeds with a virtual, customizable QR Code video stream. Designed specifically for **Quality Assurance (QA) engineers and web developers** to test QR and barcode scanner functionality in web apps without needing physical cameras, printed paper codes, or secondary mobile devices.
-
----
+<p align="center">
+  <img src="https://img.shields.io/badge/Standard-Manifest_V3-10B981?style=flat-square" alt="Manifest V3">
+  <img src="https://img.shields.io/badge/Browsers-Chrome_|_Edge_|_Brave_|_Opera_|_Firefox-06B6D4?style=flat-square" alt="Browsers">
+  <img src="https://img.shields.io/badge/Interception-WebRTC_getUserMedia-4F46E5?style=flat-square" alt="WebRTC">
+  <img src="https://img.shields.io/badge/Dependencies-Zero_External_APIs-orange?style=flat-square" alt="Zero Dependencies">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-gray?style=flat-square" alt="License"></a>
+</p>
 
 ## Overview
 
-Testing webcam-based barcode scanners typically involves printing physical codes, holding smartphones in front of laptop webcams, or dealing with lighting and glare issues. 
+Testing browser-based barcode and QR scanners in automated end-to-end test suites is notoriously cumbersome, requiring physical cameras, printed paper codes, or fragile external video loopback software. 
 
-QR-Camera eliminates these friction points by directly intercepting the browser's media API (`navigator.mediaDevices.getUserMedia`) and injecting an in-memory HD HTML5 canvas video stream rendering the specified payload directly into the target web application.
-
----
-
-## Features
-
-- **Media Stream Interception**: Hooks into `navigator.mediaDevices.getUserMedia()`, `MediaDevices.prototype.getUserMedia`, and `enumerateDevices()` transparently across target web pages.
-- **Real-Time Payload Switching**: Modifying the text input or preset in the popup immediately updates the QR Code on the live webcam stream without requiring tab reloads.
-- **High-Contrast 720p Canvas**: Streams a 1280x720 canvas at 30 FPS, ensuring near-instant barcode detection by web libraries (ZXing, `html5-qrcode`, `vue-qrcode-reader`, QuaggaJS, jsQR).
-- **Master Toggle**: Instantly activate or deactivate the virtual camera stream from the extension toolbar. When OFF, native camera access functions normally.
-- **Testing Presets & History**: Quick-fill options for URLs, ticket identifiers, SKU codes, and UUIDs, with a 10-item recent history.
-- **Visual Effects & Customization**: Optional animated laser scanline, customizable overlay text, and direct PNG export.
-- **Client-Side Only**: Executes entirely inside the browser environment without external network requests or third-party telemetry.
+QR-Camera is a **Manifest V3** browser extension that intercepts browser `navigator.mediaDevices.getUserMedia` calls, injecting a synthetic high-contrast 720p virtual video stream directly into target web applications. QA engineers and SDETs can automate QR scanner verification instantly without external hardware or camera permissions.
 
 ---
 
-## Installation
+## Architecture Flow
 
-### 1. Clone or Download
-
-```bash
-git clone https://github.com/MasterPandaa/QR-Camera.git
+```text
+Target Web Page (Scanner App)
+       │
+       ▼ calls navigator.mediaDevices.getUserMedia({ video: true })
+       │
+QR-Camera Interceptor Hook (inject.js)
+       │
+       ▼ generates synthetic HTML5 Canvas Stream (captureStream(30))
+       │
+In-Memory QR Code Matrix (qrcode.min.js) ──► Payload updated in real time via Extension Popup
+       │
+       ▼ delivers MediaStreamTrack
+Direct Ingestion by Scanning Libraries (ZXing, html5-qrcode, QuaggaJS, jsQR)
 ```
 
-### 2. Load into Your Browser
+---
 
-| Browser Family | Installation Steps |
-| :--- | :--- |
-| **Chrome / Brave / Edge / Opera** | 1. Navigate to `chrome://extensions` (or `edge://extensions`, `opera://extensions`).<br>2. Enable **Developer mode** (toggle in upper right).<br>3. Click **Load unpacked** and select the cloned `QR-Camera` directory. |
-| **Firefox** | 1. Navigate to `about:debugging#/runtime/this-firefox`.<br>2. Click **Load Temporary Add-on...**<br>3. Select `manifest.json` from the `QR-Camera` directory. |
+## Core Capabilities
+
+- **Transparent API Interception**: Overrides `getUserMedia()`, `MediaDevices.prototype.getUserMedia`, and `enumerateDevices()` across web tabs.
+- **Zero-Reload Dynamic Updates**: Modify payloads, URLs, ticket codes, or UUIDs in the extension popup with immediate frame updates.
+- **High-Contrast 720p Canvas**: Streams a 1280x720 canvas at 30 FPS, optimized for instant recognition by client scanning engines.
+- **One-Click Master Bypass Toggle**: Switch between native hardware camera feeds and virtual QR streams instantly.
+- **Built-in Scanner Verification Page**: Includes a self-contained test scanner tab to verify capture and decoding without third-party services.
+- **100% Client-Side Privacy**: Runs completely in the browser sandbox with zero telemetry or external network transmission.
 
 ---
 
-## Testing with Built-in Scanner
+## Installation & Browser Setup
 
-The extension includes a standalone test scanner page to verify functionality immediately:
+### Chrome, Edge, Brave, and Opera
 
-1. Click the QR-Camera icon in your browser toolbar.
-2. Click **Test Scanner** (or open `test-scanner.html` in your browser).
-3. Click **Start Scanner**.
-4. Change the text in the QR-Camera popup to observe immediate detection and decoding in the scanner console.
+1. Clone or download this repository:
+   ```bash
+   git clone https://github.com/MasterPandaa/QR-Camera.git
+   ```
+2. Navigate to `chrome://extensions` (or `edge://extensions`, `opera://extensions`).
+3. Enable **Developer mode** via the top-right toggle.
+4. Click **Load unpacked** and select the cloned `QR-Camera` directory.
+
+### Firefox
+
+1. Open `about:debugging#/runtime/this-firefox`.
+2. Click **Load Temporary Add-on...**
+3. Select `manifest.json` from the `QR-Camera` directory.
 
 ---
 
-## Project Structure
+## Repository Structure
 
 ```text
 QR-Camera/
 ├── manifest.json           # Manifest V3 extension configuration
-├── popup.html              # Extension toolbar popup interface
-├── popup.js                # UI state management, presets, and history
+├── popup.html              # Extension toolbar controls and preset menu
+├── popup.js                # State management and payload history
 ├── content.js              # Content script injecting the stream interceptor
-├── inject.js               # In-page hook overriding getUserMedia
+├── inject.js               # Page-level hook overriding getUserMedia
 ├── qrcode.min.js           # QR code matrix generation engine
-├── test-scanner.html       # Standalone verification scanner page
+├── test-scanner.html       # Standalone verification scanner interface
 └── icons/                  # Extension icons (16px, 48px, 128px)
 ```
 
